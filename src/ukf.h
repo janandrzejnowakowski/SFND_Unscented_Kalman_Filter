@@ -30,17 +30,16 @@ class UKF {
   void Prediction(double delta_t);
 
   /**
-   * Updates the state and the state covariance matrix using a laser measurement
+   * Updates the state and the state covariance matrix using any measurement
    * @param meas_package The measurement at k+1
    */
-  void UpdateLidar(MeasurementPackage meas_package);
+  void UpdateMeasurement(const MeasurementPackage &meas_package);
 
-  /**
-   * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
-   */
-  void UpdateRadar(MeasurementPackage meas_package);
-
+  void UpdateStateVectorAndCovarianceMatrix();
+  void SetLastMeasurementAndResetTemporaryMatrices(const MeasurementPackage &meas_package);
+  void UpdateMeanPredictedMeasurement();
+  void UpdateCrossCorrelationAndCovarianceMatrix();
+  void TransformSigmaPointsToMeasurementSpace(const MeasurementPackage &meas_package);
 
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_ = false;
@@ -95,6 +94,16 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_ = 3 - n_aug_;
+
+  // Temporary matrices and vectors, so that they do not need to be defined every time there is a new measurement
+  Eigen::VectorXd z;
+  Eigen::VectorXd z_pred;
+  Eigen::VectorXd z_diff;
+  Eigen::MatrixXd Zsig;
+  Eigen::MatrixXd S;
+  Eigen::MatrixXd Tc;
+  Eigen::MatrixXd R;
+  Eigen::MatrixXd K;
 };
 
 #endif  // UKF_H
